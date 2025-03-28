@@ -1,0 +1,33 @@
+module FIR_Filter (
+    input clk,
+    input rst,
+    input signed [15:0] x_in,  // 16-bit Input sample
+    output reg signed [31:0] y_out // 32-bit Output sample
+);
+
+    // Filter Coefficients (Example values from MATLAB)
+    parameter signed [15:0] h0 = 16'd5000;
+    parameter signed [15:0] h1 = 16'd10000;
+    parameter signed [15:0] h2 = 16'd10000;
+    parameter signed [15:0] h3 = 16'd5000;
+
+    // Shift Register for past inputs
+    reg signed [15:0] x [0:3];
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            x[0] <= 0; x[1] <= 0; x[2] <= 0; x[3] <= 0;
+            y_out <= 0;
+        end else begin
+            // Shift inputs
+            x[3] <= x[2];
+            x[2] <= x[1];
+            x[1] <= x[0];
+            x[0] <= x_in;
+
+            // FIR Computation (MAC Operation)
+            y_out <= (h0 * x[0]) + (h1 * x[1]) + (h2 * x[2]) + (h3 * x[3]);
+        end
+    end
+
+endmodule
